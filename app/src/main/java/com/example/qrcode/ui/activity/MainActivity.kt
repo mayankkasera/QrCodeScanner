@@ -5,8 +5,11 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import androidx.viewpager.widget.ViewPager
 import com.example.qrcode.R
+import com.example.qrcode.roomdb.QrResult.QrResults
+import com.example.qrcode.roomdb.utils.LocaleDataBase
 import com.example.qrcode.ui.adapter.MainViewPagerAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,6 +20,9 @@ class MainActivity : AppCompatActivity() {
         setViewPager()
         setBottomNavigationListener()
         setViewPagerListener()
+
+        val qrResult = QrResults(result = "Text",resultType = "TEXT",favourite = false,calendar = Calendar.getInstance())
+        LocaleDataBase.getAppDatabase(this)?.getQrDao()?.insertQrResults(qrResult)
 
 
     }
