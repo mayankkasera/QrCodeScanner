@@ -23,6 +23,9 @@ interface QrResultsDao {
     @Query("DELETE FROM QrResults WHERE id = :id")
     fun deleteQrResults(id: Int): Int
 
+    @Query("DELETE FROM QrResults WHERE id = :id")
+    fun deleteQrResult(id: Int): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertQrResults(qrResult: QrResults): Long
 

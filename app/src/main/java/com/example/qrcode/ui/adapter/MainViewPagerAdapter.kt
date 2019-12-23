@@ -13,6 +13,7 @@ class MainViewPagerAdapter(fm : FragmentManager) : FragmentStatePagerAdapter(fm)
             0 -> {
                 QRScannerFragment.newInstance()
             }
+
             1 -> {
                 ScannedHistoryFragment.newInstance(ScannedHistoryFragment.ResultListType.ALL_RESULT)
             }
@@ -20,6 +21,7 @@ class MainViewPagerAdapter(fm : FragmentManager) : FragmentStatePagerAdapter(fm)
             2 -> {
                 ScannedHistoryFragment.newInstance(ScannedHistoryFragment.ResultListType.FAVOURITE_RESULT)
             }
+
             else -> {
                 QRScannerFragment()
             }

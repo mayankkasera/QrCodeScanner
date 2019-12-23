@@ -25,8 +25,9 @@ class DbHelper(var qrResultDataBase: LocaleDataBase) : DbHelperI {
     }
 
     override fun deleteQrResults(id: Int): Int {
-        return qrResultDataBase.getQrDao().deleteQrResults(id)
+        return qrResultDataBase.getQrDao().deleteQrResult(id)
     }
+
 
     override fun getAllQRScannedResult(): List<QrResults> {
         return qrResultDataBase.getQrDao().getAllScannedResult()
@@ -51,6 +52,10 @@ class DbHelper(var qrResultDataBase: LocaleDataBase) : DbHelperI {
         return "TEXT"
     }
 
+
+    override fun deleteQrResult(id: Int): Int {
+        return qrResultDataBase.getQrDao().deleteQrResult(id)
+    }
 
 
 }

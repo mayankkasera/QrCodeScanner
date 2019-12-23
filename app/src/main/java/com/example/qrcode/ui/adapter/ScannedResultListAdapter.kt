@@ -40,19 +40,22 @@ class ScannedResultListAdapter(
     }
 
     override fun onBindViewHolder(holder: ScannedResultListViewHolder, position: Int) {
-        holder.bind(listOfScannedResult[position])
+        holder.bind(listOfScannedResult[position], position)
     }
 
     inner class ScannedResultListViewHolder(var view: View) : RecyclerView.ViewHolder(view) {
 
-        fun bind(qrResult: QrResults) {
+        fun bind(qrResult: QrResults, position: Int) {
             view.result.text = qrResult.result!!
             view.tvTime.text = qrResult.calendar.toFormattedDisplay()
+            setResultTypeIcon(qrResult.resultType)
             setFavourite(qrResult.favourite)
-            onClicks(qrResult)
+            onClicks(qrResult, position)
         }
 
+        private fun setResultTypeIcon(resultType: String?) {
 
+        }
 
         private fun setFavourite(isFavourite: Boolean) {
             if (isFavourite)
@@ -62,16 +65,32 @@ class ScannedResultListAdapter(
         }
 
 
-        private fun onClicks(qrResult: QrResults) {
+        private fun onClicks(qrResult: QrResults, position: Int) {
             view.setOnClickListener {
                 resultDialog.show(qrResult)
             }
 
-
+            view.setOnLongClickListener {
+                showDeleteDialog(qrResult, position)
+                return@setOnLongClickListener true
+            }
         }
 
+        private fun showDeleteDialog(qrResult: QrResults, position: Int) {
+            AlertDialog.Builder(context, R.style.CustomAlertDialog).setTitle(context.getString(R.string.delete))
+                .setMessage(context.getString(R.string.want_to_delete))
+                .setPositiveButton(context.getString(R.string.delete)) { _, _ ->
+                    deleteThisRecord(qrResult, position)
+                }
+                .setNegativeButton(context.getString(R.string.cancel)) { dialog, _ ->
+                    dialog.cancel()
+                }.show()
+        }
 
-
-
+        private fun deleteThisRecord(qrResult: QrResults, position: Int) {
+            dbHelperI.deleteQrResult(qrResult.id!!)
+            listOfScannedResult.removeAt(position)
+            notifyItemRemoved(position)
+        }
     }
 }
