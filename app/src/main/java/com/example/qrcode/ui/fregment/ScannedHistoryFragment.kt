@@ -7,21 +7,149 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.example.qrcode.R
+import com.example.qrcode.roomdb.QrResult.QrResults
+import com.example.qrcode.roomdb.utils.DbHelper
+import com.example.qrcode.roomdb.utils.DbHelperI
+import com.example.qrcode.roomdb.utils.LocaleDataBase
+import com.example.qrcode.ui.adapter.ScannedResultListAdapter
+import com.example.qrcode.utlis.gone
+import com.example.qrcode.utlis.visible
+import kotlinx.android.synthetic.main.fragment_scanned_history.view.*
+import kotlinx.android.synthetic.main.layout_header_history.view.*
+import java.io.Serializable
 
 
 class ScannedHistoryFragment : Fragment() {
 
-    companion object{
-        fun newInstance():ScannedHistoryFragment{
-            return ScannedHistoryFragment()
+    enum class ResultListType : Serializable {
+        ALL_RESULT, FAVOURITE_RESULT
+    }
+
+    companion object {
+
+        private const val ARGUMENT_RESULT_LIST_TYPE = "ArgumentResultType"
+
+        fun newInstance(screenType: ResultListType): ScannedHistoryFragment {
+            val bundle = Bundle()
+            bundle.putSerializable(ARGUMENT_RESULT_LIST_TYPE, screenType)
+            val fragment = ScannedHistoryFragment()
+            fragment.arguments = bundle
+            return fragment
         }
     }
 
+    private lateinit var mView: View
+
+    private lateinit var dbHelperI: DbHelperI
+
+    private var resultListType: ResultListType? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        handleArguments()
+    }
+
+    private fun handleArguments() {
+        resultListType = arguments?.getSerializable(ARGUMENT_RESULT_LIST_TYPE) as ResultListType
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_scanned_history, container, false)
+        mView = inflater.inflate(R.layout.fragment_scanned_history, container, false)
+        init()
+        setSwipeRefresh()
+        onClicks()
+        showListOfResults()
+        return mView.rootView
+    }
+
+    private fun init() {
+        dbHelperI = DbHelper(LocaleDataBase.getAppDatabase(context!!)!!)
+        mView.layoutHeader.tvHeaderText.text = getString(R.string.recent_scanned_results)
+    }
+
+    private fun showListOfResults() {
+        when (resultListType) {
+            ResultListType.ALL_RESULT -> showAllResults()
+            ResultListType.FAVOURITE_RESULT -> showFavouriteResults()
+        }
+    }
+
+
+    private fun showAllResults() {
+        val listOfAllResult = dbHelperI.getAllQRScannedResult()
+        showResults(listOfAllResult)
+        mView.layoutHeader.tvHeaderText.text = getString(R.string.recent_scanned)
+    }
+
+    private fun showFavouriteResults() {
+        val listOfFavouriteResult = dbHelperI.getAllFavouriteQRScannedResult()
+        showResults(listOfFavouriteResult)
+        mView.layoutHeader.tvHeaderText.text = getString(R.string.favourites_scanned_results)
+    }
+
+
+    private fun showResults(listOfQrResult: List<QrResults>) {
+        if (listOfQrResult.isNotEmpty())
+            initRecyclerView(listOfQrResult)
+        else
+            showEmptyState()
+    }
+
+    private fun initRecyclerView(listOfQrResult: List<QrResults>) {
+        mView.scannedHistoryRecyclerView.layoutManager = LinearLayoutManager(context)
+        mView.scannedHistoryRecyclerView.adapter = ScannedResultListAdapter(dbHelperI, context!!, listOfQrResult.toMutableList())
+        showRecyclerView()
+    }
+
+    private fun setSwipeRefresh() {
+        mView.swipeRefresh.setOnRefreshListener {
+            mView.swipeRefresh.isRefreshing = false
+            showListOfResults()
+        }
+    }
+
+
+    private fun onClicks() {
+        mView.layoutHeader.removeAll.setOnClickListener {
+            showRemoveAllScannedResultDialog()
+        }
+    }
+
+    private fun showRemoveAllScannedResultDialog() {
+        AlertDialog.Builder(context!!, R.style.CustomAlertDialog).setTitle(getString(R.string.clear_all))
+            .setMessage(getString(R.string.clear_all_result))
+            .setPositiveButton(getString(R.string.clear)) { _, _ ->
+                clearAllRecords()
+            }
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                dialog.cancel()
+            }.show()
+
+    }
+
+    private fun clearAllRecords() {
+        when (resultListType) {
+            ResultListType.ALL_RESULT -> dbHelperI.deleteAllQRScannedResult()
+            ResultListType.FAVOURITE_RESULT -> dbHelperI.deleteAllFavouriteQRScannedResult()
+        }
+        mView.scannedHistoryRecyclerView.adapter?.notifyDataSetChanged()
+        showListOfResults()
+    }
+
+    private fun showRecyclerView() {
+        mView.layoutHeader.removeAll.visible()
+        mView.scannedHistoryRecyclerView.visible()
+        mView.noResultFound.gone()
+    }
+
+    private fun showEmptyState() {
+        mView.layoutHeader.removeAll.gone()
+        mView.scannedHistoryRecyclerView.gone()
+        mView.noResultFound.visible()
     }
 
 
