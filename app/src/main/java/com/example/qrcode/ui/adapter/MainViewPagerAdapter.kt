@@ -30,4 +30,5 @@ class MainViewPagerAdapter(fm : FragmentManager) : FragmentStatePagerAdapter(fm)
         return 3
     }
 
+
 }
