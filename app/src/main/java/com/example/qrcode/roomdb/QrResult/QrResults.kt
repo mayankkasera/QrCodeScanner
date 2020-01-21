@@ -11,6 +11,8 @@ import java.util.*
 @TypeConverters(DateTimeConverters::class)
 class QrResults (
 
+
+
     @PrimaryKey(autoGenerate = true)
     val id: Int? = null,
 
