@@ -26,6 +26,9 @@ class QrResults (
     @ColumnInfo(name = "time")
     val calendar: Calendar
 
+
+
+
 )
 
 

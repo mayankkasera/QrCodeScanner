@@ -12,7 +12,7 @@ abstract class LocaleDataBase : RoomDatabase()  {
     abstract fun getQrDao(): QrResultsDao
 
     companion object {
-        private const val DB_NAME = "QrResultDatabase"
+        private const val DB_NAME = "MovieStack"
         private var qrResultDataBase: LocaleDataBase? = null
         fun getAppDatabase(context: Context): LocaleDataBase? {
             if (qrResultDataBase == null) {
